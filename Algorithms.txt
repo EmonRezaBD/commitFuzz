@@ -1,0 +1,18 @@
+Here all the algorithms are given step by step. 
+
+Step-1:
+
+Algorithms used in: src/risk_engine.py
+From McCabe’s original definition (and the NIST “Structured Testing” report)-
+cyclomatic complexity V ( G ) of a program’s control-flow graph is given by: 
+V ( G ) = E − N + 2 P; where: E = number of edges (control-flow transfers), N = number of nodes (basic blocks), P = number of connected components (usually 1 for a single program or function).
+
+However, In Structured code, this is reduced to V(G)=number of decision points+1; where each decision point is a node with two or more outgoing branches (e.g., if, for, while, case, catch, ?:, conditions joined with && or ||)
+What tools like SonarQube do? Static analysis tools implement exactly this interpretation: (i) They start each function at complexity 1. (ii) They add 1 for each decision point: if, for, while, do, case, ?:, catch, and each && / || that splits control flow.
+
+Refs
+[1]http://www.literateprogramming.com/mccabe.pdf
+[2]https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication500-235.pdf
+[3]https://www.sonarsource.com/products/sonarqube/
+
+Step-2:
