@@ -1,6 +1,8 @@
 import json
 import sys
 from pathlib import Path
+import matplotlib.pyplot as plt
+import altair as alt
 
 import pandas as pd
 import streamlit as st
@@ -60,12 +62,14 @@ st.caption("Visual tool for predicting bug risk from code changes")
 
 col1, col2 = st.columns([1, 4])
 with col1:
-    if st.button("Run Risk Analysis", use_container_width=True):
-        try:
-            run_pipeline()
-            st.success("Risk analysis completed. Results file updated.")
-        except Exception as e:
-            st.error(f"Failed to run pipeline: {e}")
+   if st.button("Run Risk Analysis", use_container_width=True):
+    try:
+        run_pipeline()
+        st.cache_data.clear()
+        st.success("Risk analysis completed. Results file updated.")
+        st.rerun()
+    except Exception as e:
+        st.error(f"Failed to run pipeline: {e}")
 
 # ---------- Load Data ----------
 df = load_results()
@@ -149,22 +153,55 @@ with tab2:
     with c1:
         st.markdown("**Top 10 Riskiest Commits**")
         top10 = filtered_df.sort_values("risk_score", ascending=False).head(10)
-
-        fig, ax = plt.subplots(figsize=(8, 5))
-        ax.barh(top10["commit_title"][::-1], top10["risk_score"][::-1])
-        ax.set_xlabel("Risk Score")
-        ax.set_ylabel("Commit Title")
-        plt.tight_layout()
-        st.pyplot(fig)
+        st.bar_chart(top10.set_index("commit_title")["risk_score"])
 
     with c2:
-        st.markdown("**Risk Score Distribution**")
-        fig2, ax2 = plt.subplots(figsize=(8, 5))
-        ax2.hist(filtered_df["risk_score"], bins=10)
-        ax2.set_xlabel("Risk Score")
-        ax2.set_ylabel("Number of Commits")
-        plt.tight_layout()
-        st.pyplot(fig2)
+        st.markdown("**Risk Scores by Commit**")
+        st.bar_chart(filtered_df.set_index("commit_title")["risk_score"])
+
+    st.markdown("### Normalized Commit Metric Heatmap")
+
+    heatmap_df = filtered_df[[
+        "commit_title",
+        "cc_delta",
+        "flow_score",
+        "change_ratio",
+        "risk_score"
+    ]].copy()
+
+    heatmap_df = heatmap_df.sort_values("risk_score", ascending=False).head(20)
+
+    metric_cols = ["cc_delta", "flow_score", "change_ratio", "risk_score"]
+
+    for col in metric_cols:
+        min_val = heatmap_df[col].min()
+        max_val = heatmap_df[col].max()
+        if max_val > min_val:
+            heatmap_df[col] = (heatmap_df[col] - min_val) / (max_val - min_val)
+        else:
+            heatmap_df[col] = 0.0
+
+    heatmap_long = heatmap_df.melt(
+        id_vars="commit_title",
+        var_name="metric",
+        value_name="value"
+    )
+
+    heatmap = alt.Chart(heatmap_long).mark_rect().encode(
+        x=alt.X("metric:N", title="Metric"),
+        y=alt.Y("commit_title:N", sort="-x", title="Commit"),
+        color=alt.Color("value:Q", title="Normalized Value"),
+        tooltip=[
+            alt.Tooltip("commit_title:N", title="Commit"),
+            alt.Tooltip("metric:N", title="Metric"),
+            alt.Tooltip("value:Q", title="Normalized Value", format=".3f")
+        ]
+    ).properties(
+        width=700,
+        height=500
+    )
+
+    st.altair_chart(heatmap, use_container_width=True)
 
 with tab3:
     st.subheader("Commit Details")
