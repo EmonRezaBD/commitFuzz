@@ -1,0 +1,57 @@
+Here all the algorithms are given step by step. 
+
+Step-1:
+
+Algorithms used in: src/risk_engine.py
+Metric-1: CC Delta
+From McCabe’s original definition (and the NIST “Structured Testing” report)-
+cyclomatic complexity V ( G ) of a program’s control-flow graph is given by: 
+V ( G ) = E − N + 2 P; where: E = number of edges (control-flow transfers), N = number of nodes (basic blocks), P = number of connected components (usually 1 for a single program or function).
+
+However, In Structured code, this is reduced to V(G)=number of decision points+1; where each decision point is a node with two or more outgoing branches (e.g., if, for, while, case, catch, ?:, conditions joined with && or ||)
+What tools like SonarQube do? Static analysis tools implement exactly this interpretation: (i) They start each function at complexity 1. (ii) They add 1 for each decision point: if, for, while, do, case, ?:, catch, and each && / || that splits control flow.
+
+Refs
+[1]http://www.literateprogramming.com/mccabe.pdf
+[2]https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication500-235.pdf
+[3]https://www.sonarsource.com/products/sonarqube/
+
+Metric-2: Flow Alteration Score
+Our flow score is a simplified version — counting how many decision points were added or removed. 
+Any modification to control flow (adding OR deleting) is a risk signal because it changes execution paths that were previously tested.
+The idea is: any touch to control flow = risk, regardless of direction. Both of these are risky:
+Adding a new for loop → new untested path
+Deleting an if guard → removed safety check
+
+CC Delta tells us the direction of complexity change, Flow Score tells us the magnitude of control flow disruption.
+
+Refs
+[1]https://www.st.cs.uni-saarland.de/edu/recommendation-systems/papers/ICSE05Churn.pdf
+
+Metric-3: Change Size Ratio
+Their finding: relative change size (lines changed / function size) is one of the strongest predictors of bugs. 
+A small function with many changed lines is riskier than a large function with the same number of changes.
+
+Interpretation:
+
+Ratio ≈ 0.1 → only 10% of the function was touched → low risk
+Ratio ≈ 1.0 → change size equals function size → high risk
+Ratio > 1.0 → more lines changed than original function had → very high risk (major rewrite)
+
+Refs
+[1]https://www.computer.org/csdl/proceedings-article/icsm/1998/87790024/12OmNwt5sfZ
+[2]https://dl.acm.org/doi/10.1145/1368088.1368114
+
+Normalization:
+1. We normalize so that negative values get pushed toward 0 (low risk) and positive values toward 1 (high risk)
+2. Used the equal weighting (0.33/0.33/0.34) [1][2]
+3. The threshold (0.3 / 0.6). This follows the tertile split approach used in defect prediction literature.
+0.3/0.6 roughly divides the [0,1] range into three equal bands. This is a reasonable default.
+However, in future we can configure the weights and thresholds
+
+Refs 
+[1]https://ieeexplore.ieee.org/document/4221632
+[2]https://dl.acm.org/doi/10.1145/1368088.1368114
+[3]https://www.sciencedirect.com/science/article/abs/pii/S0164121209001605
+
+Step-2:

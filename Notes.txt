@@ -13,4 +13,13 @@
 3. From each 10 repo, 100 data; in total: 10*100 = 1000 data
 4. For testing purpose now collecting 10*5 = 50 data
 5. For debugging: Ctrl+Shift+D, use debug pointers
-6. 
+6. ***Before commit, remove the API key from the file manually***
+7. Implementation Steps:
+8. Risk Engine (src/risk_engine.py)
+-Compute Cyclomatic Complexity Delta — count decision points (if, for, while, switch, case, &&, ||) in before vs. after
+-Compute Control Flow Alteration Score — measure added/removed branches, nesting depth changes
+-Compute Lines Changed ratio and overall Risk Score (weighted combo)
+9. Differential CFG (src/cfg_generator.py)
+10. Differential Call Graph (src/call_graph.py)
+11. Risk Heatmap (src/heatmap.py)
+12. Streamlit Dashboard (src/dashboard.py)
