@@ -55,3 +55,20 @@ Refs
 [3]https://www.sciencedirect.com/science/article/abs/pii/S0164121209001605
 
 Step-2:
+Resources for generating CFG-
+1. matplotlib
+2. networkx (https://networkx.org/documentation/latest/auto_examples/basic/plot_simple_graph.html)
+
+Step-3:
+Differential call graph 
+Static call graph: built from the source code without running the program; shows all possible calls the analyzer can find. Call graph shows which function calls which function.
+Visual Studio "Call Hierarchy". How can we generate this from our dataset?
+Issue: We don't have info of caller of our function, also it is not feasible to find the caller info from the github repo. All we can get which 
+functions are being called from our single fuction. Need to resolve this issue, how to get call graph?
+
+
+
+
+
+
+
