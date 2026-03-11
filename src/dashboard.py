@@ -124,7 +124,13 @@ if search_text:
     ]
 
 # ---------- Main Tabs ----------
-tab1, tab2, tab3 = st.tabs(["Commit Table", "Charts", "Commit Details"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "Commit Table",
+    "Charts",
+    "Commit Details",
+    "Developer Interface",
+    "Actionable Insights"
+])
 
 with tab1:
     st.subheader("Commit Risk Table")
@@ -240,3 +246,133 @@ with tab3:
                 st.success(
                     "This commit shows relatively low bug risk compared with the rest of the dataset."
                 )
+with tab4:
+    st.subheader("Developer Interface")
+
+    if filtered_df.empty:
+        st.info("No commits match the current filters.")
+    else:
+        selected_commit_dev = st.selectbox(
+            "Select a commit for developer review",
+            filtered_df["commit_title"].tolist(),
+            key="developer_interface_commit"
+        )
+
+        row = filtered_df[filtered_df["commit_title"] == selected_commit_dev].iloc[0]
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Overall Risk", row["risk_level"])
+        c2.metric("Risk Score", f"{row['risk_score']:.3f}")
+        c3.metric("Change Ratio", f"{row['change_ratio']:.3f}")
+
+        st.markdown("### Risk Breakdown")
+        st.write(f"**Cyclomatic Complexity Delta:** {row['cc_delta']}")
+        st.write(f"**Flow Alteration Score:** {row['flow_score']}")
+        st.write(f"**Change Ratio:** {row['change_ratio']}")
+
+        st.markdown("### Highlighted Risk Signals")
+
+        risk_signals = []
+        if row["cc_delta"] > filtered_df["cc_delta"].median():
+            risk_signals.append("Complexity increased more than the median commit.")
+        if row["flow_score"] > filtered_df["flow_score"].median():
+            risk_signals.append("Control flow was altered significantly.")
+        if row["change_ratio"] > filtered_df["change_ratio"].median():
+            risk_signals.append("A relatively large portion of the code was changed.")
+        if row["risk_level"] == "HIGH":
+            risk_signals.append("This commit should receive manual review before merge.")
+
+        if risk_signals:
+            for signal in risk_signals:
+                st.warning(signal)
+        else:
+            st.success("No unusually strong risk signals detected for this commit.")
+
+        st.markdown("### Manual Review Focus")
+        review_lines = [
+            "Check newly added conditional branches.",
+            "Inspect modified logic for side effects.",
+            "Review edge cases and boundary conditions.",
+            "Verify error handling and fallback paths."
+        ]
+
+        for item in review_lines:
+            st.checkbox(item, key=f"{selected_commit_dev}_{item}")
+with tab5:
+    st.subheader("Actionable Insights")
+
+    if filtered_df.empty:
+        st.info("No commits available for insights.")
+    else:
+        selected_commit_ai = st.selectbox(
+            "Select a commit for recommendations",
+            filtered_df["commit_title"].tolist(),
+            key="actionable_insights_commit"
+        )
+
+        row = filtered_df[filtered_df["commit_title"] == selected_commit_ai].iloc[0]
+
+        st.markdown("### Suggested Reviewers")
+
+        suggested_reviewers = []
+
+        if row["flow_score"] >= filtered_df["flow_score"].quantile(0.75):
+            suggested_reviewers.append(("Security Reviewer", "High control-flow alteration may affect logic paths."))
+        if row["cc_delta"] >= filtered_df["cc_delta"].quantile(0.75):
+            suggested_reviewers.append(("Senior Developer", "Complexity increased and may require architectural review."))
+        if row["change_ratio"] >= filtered_df["change_ratio"].quantile(0.75):
+            suggested_reviewers.append(("Module Owner", "Large code changes should be reviewed by the code owner."))
+
+        if not suggested_reviewers:
+            suggested_reviewers.append(("Peer Reviewer", "This commit appears lower risk and suitable for standard review."))
+
+        for reviewer, reason in suggested_reviewers:
+            st.write(f"**{reviewer}** — {reason}")
+
+        st.markdown("### Review Checklist")
+
+        checklist = []
+
+        if row["flow_score"] > filtered_df["flow_score"].median():
+            checklist.extend([
+                "Verify new conditional logic behaves as intended.",
+                "Check for unintended side effects in branching paths.",
+                "Test boundary conditions for modified control flow."
+            ])
+
+        if row["cc_delta"] > filtered_df["cc_delta"].median():
+            checklist.extend([
+                "Review whether the added complexity can be simplified.",
+                "Check for maintainability concerns in the updated logic."
+            ])
+
+        if row["change_ratio"] > filtered_df["change_ratio"].median():
+            checklist.extend([
+                "Run targeted regression tests for the modified areas.",
+                "Review whether dependent modules may be affected."
+            ])
+
+        if not checklist:
+            checklist = [
+                "Perform standard code review.",
+                "Run normal unit and integration tests."
+            ]
+
+        seen = set()
+        deduped = []
+        for item in checklist:
+            if item not in seen:
+                seen.add(item)
+                deduped.append(item)
+
+        for item in deduped:
+            st.checkbox(item, key=f"{selected_commit_ai}_{item}")
+
+        st.markdown("### Testing Recommendation")
+
+        if row["risk_level"] == "HIGH":
+            st.error("Recommended: manual review + focused regression testing before merge.")
+        elif row["risk_level"] == "MEDIUM":
+            st.warning("Recommended: targeted review and unit/integration testing.")
+        else:
+            st.success("Recommended: standard peer review and routine testing.")
