@@ -66,6 +66,21 @@ Visual Studio "Call Hierarchy". How can we generate this from our dataset?
 Issue: We don't have info of caller of our function, also it is not feasible to find the caller info from the github repo. All we can get which 
 functions are being called from our single fuction. Need to resolve this issue, how to get call graph?
 
+Call Graph;
+1. Explicit call: Visible inside the codebase
+2. Implicit call: Don't visible but call by system
+We are only Implementing the Explicit one
+
+There are 03 ways to generate call graph: static, dynamic, and hybrid
+static: Regex, AST-based, Compiler-based
+We are choosing Regex. 
+Pros: simple, language-agnostic, fast
+Cons: misses implicit calls, operator overloading, virtual functions
+
+
+
+Refs
+[1]https://dl.acm.org/doi/10.1145/263700.264352
 
 
 
