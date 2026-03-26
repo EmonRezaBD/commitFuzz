@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Load the C++ file
-with open("D:\\SEProject\\Data-Analyzer\\FirstDialog.cpp", "r") as f:
+with open("D:\\SEProject\\Data-Analyzer\\DemoProjectDlg.cpp", "r") as f: # Change the path to your file [change]
     code = f.read()
 
 #**Step 2: Extract function bodies**
@@ -74,7 +74,7 @@ def extract_calls(body):
     return list(set(calls))
 
 # Test on insertInCombo
-target = "insertInCombo"
+target = "OnBnClickedLoadFile" # Need to change the target manually based on the function we want to analyze [change]
 body = functions[target]
 calls = extract_calls(body)
 print(f"\n{target} calls: {calls}")
@@ -140,7 +140,7 @@ def draw_call_graph(target, outgoing_calls, incoming_calls):
             node_size=2000,
             with_labels=True,
             font_size=9,
-            arrows=True,
+            arrowstyle='-|>',
             arrowsize=20,
             edge_color='gray')
     
