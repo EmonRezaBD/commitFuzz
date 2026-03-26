@@ -77,7 +77,7 @@ We are choosing Regex.
 Pros: simple, language-agnostic, fast
 Cons: misses implicit calls, operator overloading, virtual functions
 
-
+Limitations: Our feature can't trace call graph across different cpp files.
 
 Refs
 [1]https://dl.acm.org/doi/10.1145/263700.264352
