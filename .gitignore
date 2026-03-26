@@ -1,15 +1,24 @@
 # Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
 venv/
 env/
-.vscode/
-
-# Local
-.DS_Store
-*.log
-results/*.csv
-!results/.gitkeep
 
 # Streamlit
 .streamlit/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Results if large
+results/*.csv

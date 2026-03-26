@@ -23,3 +23,18 @@
 10. Differential Call Graph (src/call_graph.py)
 11. Risk Heatmap (src/heatmap.py)
 12. Streamlit Dashboard (src/dashboard.py)
+
+Date: 26 March 2026
+
+Plan:
+1. Demo MFC C++ Project is running
+2. We can see the call graph in the visual studio 2019
+3. Now, need to generate our call graph
+
+Flow:
+1. Will work on our Demo C++ MFC Project
+2. Will pick up a single function manually, then generate the call graph
+3. After that CFG, Heatmap, others will be same for that fuction
+4. Benchmark the call graph feature with Visual Studios' call graph
+
+Now, Implementing call graph
