@@ -42,8 +42,8 @@ But, Need to change the file name and target function manually.
 
 Milestone 3 presentation link: https://docs.google.com/presentation/d/1ZyGCYfaoc2bzehxkACvs6hNYZj-kihcxsnBDWMQ7QCk/edit?usp=sharing
 
-
-
-
+Testing call graph:
+1. Data Analyzer: generateGraph()
+2. 
 
 

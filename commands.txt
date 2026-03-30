@@ -18,3 +18,8 @@ git push
 Run app: streamlit run src/dashboard.py
 
 Activate venv: fuzz\Scripts\activate
+
+If we delete the repo and reclone ut then need to create the virtual environment again. Also, install requirements.txt
+
+
+

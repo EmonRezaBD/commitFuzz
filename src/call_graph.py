@@ -3,8 +3,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Load the C++ file
-# with open("D:\\SEProject\\Data-Analyzer\\DemoProjectDlg.cpp", "r") as f: # Change the path to your file [change]
-with open("D:\\SEProject\\qBittorrent\\src\\gui\\rss\\feedlistwidget.cpp", "r") as f: # Change the path to your file [change]
+# with open("D:\\SEProject\\Data-Analyzer\\FirstDialog.cpp", "r") as f: # Change the path to your file [rokon add] #data-analyzer
+# with open("D:\\SEProject\\qBittorrent\\src\\gui\\rss\\feedlistwidget.cpp", "r") as f: # Change the path to your file [change]
+with open("D:\\SEProject\\FFmpeg\\libavdevice\\jack.c", "r") as f: # Change the path to your file [change]
     code = f.read()
 
 #**Step 2: Extract function bodies**
@@ -13,13 +14,34 @@ def extract_function_bodies(code):
     functions = {}
     
     # Match: returnType ClassName::functionName(params) {
-    pattern = r'(\w+)\s+\w+::(\w+)\s*\([^)]*\)\s*\{'
+    # pattern = r'(\w+)\s+\w+::(\w+)\s*\([^)]*\)\s*\{'
+    
+    # for match in re.finditer(pattern, code):
+    #     func_name = match.group(2)
+    #     start = match.end()  # position after opening {
+        
+    #     # Find matching closing } by counting braces
+    #     brace_count = 1
+    #     pos = start
+    #     while pos < len(code) and brace_count > 0:
+    #         if code[pos] == '{':
+    #             brace_count += 1
+    #         elif code[pos] == '}':
+    #             brace_count -= 1
+    #         pos += 1
+        
+    #     body = code[start:pos-1]
+    #     functions[func_name] = body
+
+    #Handle c and cpp both functions
+     # Match C++ style: returnType ClassName::functionName(params) {
+    # Match C style:   returnType functionName(params) {
+    pattern = r'(?:\w+[\s\*]+)(?:\w+::)?(\w+)\s*\([^)]*\)\s*\{'
     
     for match in re.finditer(pattern, code):
-        func_name = match.group(2)
-        start = match.end()  # position after opening {
+        func_name = match.group(1)
+        start = match.end()
         
-        # Find matching closing } by counting braces
         brace_count = 1
         pos = start
         while pos < len(code) and brace_count > 0:
@@ -75,8 +97,9 @@ def extract_calls(body):
     return list(set(calls))
 
 # Test on insertInCombo
-# target = "OnBnClickedLoadFile" # Need to change the target manually based on the function we want to analyze [change]
-target = "handleItemAboutToBeRemoved" # Need to change the target manually based on the function we want to analyze [change]
+target = "audio_read_header" #FFmpeg
+# target = "handleItemAboutToBeRemoved" # Need to change the target manually based on the function we want to analyze #qBittorrent
+# target = "generateGraph" # Need to change the target manually based on the function we want to analyze [rokon add]#data-analyzer
 body = functions[target]
 calls = extract_calls(body)
 print(f"\n{target} calls: {calls}")
