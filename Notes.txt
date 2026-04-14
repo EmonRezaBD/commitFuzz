@@ -147,6 +147,16 @@ dot -Tsvg graph.dot -o callgraph.svg
 # Export to PDF
 dot -Tpdf graph.dot -o callgraph.pdf
 
+In this stage, the test_case.c is working toally fine.
+Now, extending the Pass for Our Own Code
+
+Issue: I have a big project consisting of many .cpp and .h files. How can I 
+generate call graph from it? 
+
+Sol1: 
+
+
+
 
 
 
