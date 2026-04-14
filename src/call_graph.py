@@ -3,9 +3,9 @@ import networkx as nx
 import matplotlib.pyplot as plt
 
 # Load the C++ file
-# with open("D:\\SEProject\\Data-Analyzer\\FirstDialog.cpp", "r") as f: # Change the path to your file [rokon add] #data-analyzer
+with open("D:\\SEProject\\Data-Analyzer\\FirstDialog.cpp", "r") as f: # Change the path to your file [rokon add] #data-analyzer
 # with open("D:\\SEProject\\qBittorrent\\src\\gui\\rss\\feedlistwidget.cpp", "r") as f: # Change the path to your file [change]
-with open("D:\\SEProject\\FFmpeg\\libavdevice\\jack.c", "r") as f: # Change the path to your file [change]
+# with open("D:\\SEProject\\FFmpeg\\libavdevice\\jack.c", "r") as f: # Change the path to your file [change]
     code = f.read()
 
 #**Step 2: Extract function bodies**
@@ -97,9 +97,9 @@ def extract_calls(body):
     return list(set(calls))
 
 # Test on insertInCombo
-target = "audio_read_header" #FFmpeg
+# target = "audio_read_header" #FFmpeg
 # target = "handleItemAboutToBeRemoved" # Need to change the target manually based on the function we want to analyze #qBittorrent
-# target = "generateGraph" # Need to change the target manually based on the function we want to analyze [rokon add]#data-analyzer
+target = "generateGraph" # Need to change the target manually based on the function we want to analyze [rokon add]#data-analyzer
 body = functions[target]
 calls = extract_calls(body)
 print(f"\n{target} calls: {calls}")

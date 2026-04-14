@@ -44,6 +44,110 @@ Milestone 3 presentation link: https://docs.google.com/presentation/d/1ZyGCYfaoc
 
 Testing call graph:
 1. Data Analyzer: generateGraph()
-2. 
+
+Done. 
+
+14 April, 2026
+Professor's feedback: Generate call graph from the LLVM 
+Theory
+
+Issue:: "why not just parse the C++ source text to find function calls?" The answer is 
+that C++ is extremely hard to parse correctly. Templates, macros, overloading, and inheritance 
+make text-based analysis fragile and incomplete.
+
+LLVM:LLVM solves this by first compiling your code into a simplified, universal format called LLVM IR 
+(Intermediate Representation). This IR is much simpler than C++ source — no macros, no 
+templates, everything is explicit. The pass then analyzes this IR instead of raw source code.
+
+Original C++: int add(int a, int b) { return a + b; }
+define i32 @add(i32 %a, i32 %b) 
+{
+entry:
+ %result = add i32 %a, %b
+ ret i32 %result
+}
+
+It can also detect direct and undirect calls. Solve pointer analysis.
+
+Clang: Clang is a modern compiler front-end designed for the C language family, including C, C++, and Objective-C. It is known for its fast compilation times, 
+user-friendly error messages, and modular architecture. Clang translates source code into LLVM Intermediate Representation (IR), which is a platform-independent code format that can be optimized and compiled into machine code by LLVM. 
+
+
+Now, working with this repo: https://github.com/bernardnongpoh/CallGraph
+Everything inside Vmware Ubuntu 64 bit
+
+Step 1 — Install Build Dependencies
+sudo apt-get update
+sudo apt-get install -y build-essential cmake wget xz-utils
+
+Step 2 — Download Pre-compiled LLVM 14 Binaries
+# Download LLVM 14 pre-compiled binaries for Ubuntu 18.04 (compatible with 20.04)
+wget https://github.com/llvm/llvm-project/releases/download/llvmorg-14.0.0/\
+ clang+llvm-14.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+# Extract to a permanent location (e.g., /opt/llvm or your home directory)
+tar -xvf clang+llvm-14.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz
+mv clang+llvm-14.0.0-x86_64-linux-gnu-ubuntu-18.04 /rokon/home/llvm14
+
+Step 3 — Configure Environment Variables
+# Open your shell configuration file
+nano ~/.bashrc
+# Add these lines at the bottom:
+export LLVM_DIR=/opt/llvm14
+export LLVM_CONFIG=$LLVM_DIR/bin/llvm-config
+export PATH="$PATH:$LLVM_DIR/bin"
+
+Then apply the changes:
+source ~/.bashrc
+
+Step 4 — Verify LLVM Installation
+clang --version
+
+Step 5 — Install CMake
+sudo apt-get install -y cmake
+cmake --version
+# Expected: cmake version 3.x.x (any version >= 3.0 works)
+
+Step 6 — Install Graphviz (Optional, for Visual Output)
+sudo apt-get install -y graphviz xdot
+
+
+Building the CallGrpah LLVM pass
+
+Step 1 — Clone the Repository
+git clone https://github.com/bernardnongpoh/CallGraph.git
+cd CallGraph
+
+Step 2 — Create the Build Directory and Run CMake
+mkdir build
+cd build
+cmake ..
+
+Step 3 — Compile the Pass
+make
+This produces the shared library: build/src/CallGraph/libCallGraph.so
+
+Running the Pass on my C/C++ code
+Using the Provided run.sh Script
+# Go back to the CallGraph root directory
+cd /path/to/CallGraph
+# Run on a C source file
+./run.sh test/test_case.c
+# Run on a C++ source file
+./run.sh your_code.cpp
+
+
+Understanding the Output
+
+# Interactive viewer (requires xdot)
+xdot graph.dot
+# Export to PNG
+dot -Tpng graph.dot -o callgraph.png
+# Export to SVG (vector, scales to any size)
+dot -Tsvg graph.dot -o callgraph.svg
+# Export to PDF
+dot -Tpdf graph.dot -o callgraph.pdf
+
+
+
 
 
