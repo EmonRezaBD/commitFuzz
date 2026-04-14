@@ -153,7 +153,23 @@ Now, extending the Pass for Our Own Code
 Issue: I have a big project consisting of many .cpp and .h files. How can I 
 generate call graph from it? 
 
-Sol1: 
+Sol1: LLVM analysis requires bitcode rather than 
+source code. Must compile every .cpp file in 
+your Data-Analyzer project into an individual 
+bitcode (.bc) file.
+
+
+Moving large codebase/files from windows to Ubuntu:
+1. VM->Settings->Option-> Shared folder
+2. Browse the file
+3. It'll be mount in /mnt/hgfs
+4. Now, i can access it cd /mnt/hgfs/folder name
+5. Copying file from the shared folder to the main working directory: rokon@rokon-ubuntu:/mnt/hgfs/SEProject$ cp /mnt/hgfs/SEProject/Data-Analyzer.rar ~/CallGraph/test/
+6. unzip the file-
+sudo apt update
+sudo apt install unrar
+unrar x filename.rar
+
 
 
 
