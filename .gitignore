@@ -23,3 +23,9 @@ Thumbs.db
 
 # Results if large
 results/*.csv
+
+CallGraph/build/*.so
+*.bc
+*.o
+__pycache__/
+venv/
