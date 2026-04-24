@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC  -std=c++14 -shared  -o libCallGraph.so CMakeFiles/CallGraph.dir/CallGraph.cpp.o CMakeFiles/CallGraph.dir/Graph.cpp.o CMakeFiles/CallGraph.dir/PointerAnalysis.cpp.o   -L/home/rokon/llvm14/lib 

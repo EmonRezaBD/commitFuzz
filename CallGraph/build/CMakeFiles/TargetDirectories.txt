@@ -1,0 +1,8 @@
+/home/rokon/CallGraph/build/CMakeFiles/intrinsics_gen.dir
+/home/rokon/CallGraph/build/CMakeFiles/omp_gen.dir
+/home/rokon/CallGraph/build/CMakeFiles/acc_gen.dir
+/home/rokon/CallGraph/build/CMakeFiles/edit_cache.dir
+/home/rokon/CallGraph/build/CMakeFiles/rebuild_cache.dir
+/home/rokon/CallGraph/build/src/CallGraph/CMakeFiles/CallGraph.dir
+/home/rokon/CallGraph/build/src/CallGraph/CMakeFiles/edit_cache.dir
+/home/rokon/CallGraph/build/src/CallGraph/CMakeFiles/rebuild_cache.dir
