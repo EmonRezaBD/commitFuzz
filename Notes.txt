@@ -179,6 +179,11 @@ Visualize it with my existing Python visualization code
 Connect it to your dashboard (Phase 1 of my pipeline). 
 
 
+Risk heatmap vs CFG:
+Risk heatmap color coded line by line. CFG by nodes. 
+CFG tells where the structure changed
+Heatmap tells exactly which lines are risky
+
 
 
 
