@@ -170,6 +170,14 @@ sudo apt update
 sudo apt install unrar
 unrar x filename.rar
 
+24 April, 2026
+1. Created a demo C++ file and LLVM can generate the call graph successfully
+2. Issue: Compiler is mangling the function names. (e.g., _Z14generateReportPKc instead of generateReport)
+3. So, now we need to Parse graph.txt output into a Python networkx graph
+Demangle function names
+Visualize it with my existing Python visualization code
+Connect it to your dashboard (Phase 1 of my pipeline). 
+
 
 
 
