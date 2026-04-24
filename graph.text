@@ -1,0 +1,7 @@
+[_Z10createNodei]:[malloc]
+[_Z11insertFrontP10LinkedListi]:[_Z10createNodei]
+[_Z9insertEndP10LinkedListi]:[_Z10createNodei]
+[_Z10deleteNodeP10LinkedListi]:[free]
+[_Z9printListP10LinkedList]:[printf]
+[_Z8freeListP10LinkedList]:[free]
+[main]:[_Z9insertEndP10LinkedListi],[_Z11insertFrontP10LinkedListi],[_Z9printListP10LinkedList],[_Z10deleteNodeP10LinkedListi],[_Z8sortListP10LinkedList],[_Z11reverseListP10LinkedList],[_Z10searchNodeP10LinkedListi],[printf],[_Z8freeListP10LinkedList]

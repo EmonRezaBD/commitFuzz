@@ -185,6 +185,26 @@ CFG tells where the structure changed
 Heatmap tells exactly which lines are risky
 
 
+Pipeline for call graph-
+User uploads C++ file + enters function name
+        ↓
+dashboard.py calls Python subprocess
+        ↓
+subprocess runs: ./CallGraph/run.sh uploaded_file.cpp
+        ↓
+LLVM generates: graph.txt + graph.dot
+        ↓
+dashboard.py reads graph.txt
+        ↓
+Python parses + demangles function names
+        ↓
+networkx builds the graph
+        ↓
+Streamlit displays it
+
+For various cpp files-
+Any .cpp file → LLVM → same graph.txt format → same parser → different graph
+
 
 
 

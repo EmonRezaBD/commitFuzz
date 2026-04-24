@@ -1,0 +1,17 @@
+digraph G {
+"createNode"->malloc;
+"insertFront"->"createNode";
+"insertEnd"->"createNode";
+"deleteNode"->free;
+"printList"->printf;
+"freeList"->free;
+main->"insertEnd";
+main->"insertFront";
+main->"printList";
+main->"deleteNode";
+main->"sortList";
+main->"reverseList";
+main->"searchNode";
+main->printf;
+main->"freeList";
+}
