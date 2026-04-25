@@ -292,19 +292,19 @@ def render_zoomable_image(png_path, height=650):
 def render_cfg_tab(before_path, after_path, before_label, after_label, results_dir):
     """Main render function called from dashboard.py"""
 
-    st.header("🌊 Differential CFG Analysis")
+    st.header("Differential CFG Analysis")
     st.write("Compares control flow graphs before and after a commit to highlight structural changes.")
 
     # Show selected files
     col1, col2 = st.columns(2)
     with col1:
         if before_label:
-            st.info(f"📄 Before: `{before_label}`")
+            st.info(f"Before: `{before_label}`")
         else:
             st.warning("No before file selected.")
     with col2:
         if after_label:
-            st.info(f"📄 After: `{after_label}`")
+            st.info(f"After: `{after_label}`")
         else:
             st.warning("No after file selected.")
 
@@ -336,10 +336,10 @@ def render_cfg_tab(before_path, after_path, before_label, after_label, results_d
                     )
                     st.session_state.cfg_png   = output_path
                     st.session_state.cfg_stats = stats
-                    st.success("✅ Differential CFG generated successfully!")
+                    st.success("Differential CFG generated successfully!")
 
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f"Error: {e}")
 
     # Display results (persists via session state)
     if st.session_state.cfg_png and os.path.exists(st.session_state.cfg_png):
@@ -351,14 +351,14 @@ def render_cfg_tab(before_path, after_path, before_label, after_label, results_d
         # Download button
         with open(png_path, 'rb') as f:
             st.download_button(
-                label="⬇️ Download CFG Image",
+                label="Download CFG Image",
                 data=f,
                 file_name="cfg_diff.png",
                 mime="image/png"
             )
 
     # Info box
-    with st.expander("ℹ️ About Differential CFG"):
+    with st.expander("About Differential CFG"):
         st.markdown("""
         **What is a CFG?**
         A Control Flow Graph (CFG) models execution paths through a function.

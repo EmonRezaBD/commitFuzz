@@ -195,19 +195,19 @@ def render_riskscore_tab(before_path, after_path,
                          before_label, after_label, results_dir):
     """Main render function called from dashboard.py"""
 
-    st.header("📊 Risk Score Analysis")
+    st.header("Risk Score Analysis")
     st.write("Quantifies commit risk using three established software metrics.")
 
     # Show selected files
     col1, col2 = st.columns(2)
     with col1:
         if before_label:
-            st.info(f"📄 Before: `{before_label}`")
+            st.info(f"Before: `{before_label}`")
         else:
             st.warning("No before file selected.")
     with col2:
         if after_label:
-            st.info(f"📄 After: `{after_label}`")
+            st.info(f"After: `{after_label}`")
         else:
             st.warning("No after file selected.")
 
@@ -220,7 +220,7 @@ def render_riskscore_tab(before_path, after_path,
         st.session_state.gauge_chart    = None
 
     # Analyze button
-    if st.button("🚀 Compute Risk Score", type="primary"):
+    if st.button("Compute Risk Score", type="primary"):
         if not before_path or not after_path:
             st.error("Please provide both before and after files.")
         else:
@@ -241,10 +241,10 @@ def render_riskscore_tab(before_path, after_path,
                                          metrics['risk_level'], gauge_path)
                     st.session_state.risk_chart  = chart_path
                     st.session_state.gauge_chart = gauge_path
-                    st.success("✅ Risk Score computed successfully!")
+                    st.success("Risk Score computed successfully!")
 
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f"Error: {e}")
 
     # Display results
     if st.session_state.risk_metrics:
@@ -277,7 +277,7 @@ def render_riskscore_tab(before_path, after_path,
         st.divider()
 
         # Metric details table
-        st.subheader("📋 Detailed Metrics")
+        st.subheader("Detailed Metrics")
         col1, col2, col3 = st.columns(3)
 
         with col1:
@@ -286,22 +286,22 @@ def render_riskscore_tab(before_path, after_path,
             st.markdown(f"- **After:** `{m['cc_after']}`")
             st.markdown(f"- **Delta:** `{m['cc_delta']:+d}`")
             st.markdown(f"- **Normalized:** `{m['norm_cc']}`")
-            st.caption("📖 McCabe (1976)")
+            st.caption("McCabe (1976)")
 
         with col2:
             st.markdown("#### Control Flow Alteration")
             st.markdown(f"- **Score:** `{m['flow_score']}`")
             st.markdown(f"- **Normalized:** `{m['norm_flow']}`")
-            st.caption("📖 Nagappan & Ball (2005)")
+            st.caption("Nagappan & Ball (2005)")
 
         with col3:
             st.markdown("#### Change Size Ratio")
             st.markdown(f"- **Ratio:** `{m['change_ratio']}`")
             st.markdown(f"- **Normalized:** `{m['norm_ratio']}`")
-            st.caption("📖 Moser et al. (2008)")
+            st.caption("Moser et al. (2008)")
 
     # Info box
-    with st.expander("ℹ️ About Risk Score"):
+    with st.expander("About Risk Score"):
         st.markdown("""
         **Three metrics combined:**
 

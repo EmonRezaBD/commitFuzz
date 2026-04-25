@@ -136,7 +136,7 @@ st.sidebar.caption("Commit-Level Risk Scoring & Visualization")
 st.sidebar.divider()
 
 # --- Call Graph file upload ---
-st.sidebar.subheader("📌 Call Graph")
+st.sidebar.subheader("Call Graph")
 uploaded_cpp = st.sidebar.file_uploader(
     "C++ Source File",
     type=['cpp', 'c', 'h'],
@@ -146,7 +146,7 @@ uploaded_cpp = st.sidebar.file_uploader(
 st.sidebar.divider()
 
 # --- Commit Analysis file uploads ---
-st.sidebar.subheader("📊 Commit Analysis")
+st.sidebar.subheader("Commit Analysis")
 uploaded_before = st.sidebar.file_uploader(
     "Before Commit (.cpp)",
     type=['cpp', 'c'],
@@ -208,11 +208,11 @@ else:
 # ============================================================
 
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "📌 Call Graph",
-    "🌊 Differential CFG",
-    "🌡️ Risk Heatmap",
-    "📊 Risk Score",
-    "💡 Actionable Insights"
+    "Call Graph",
+    "Differential CFG",
+    "Risk Heatmap",
+    "Risk Score",
+    "Actionable Insights"
 ])
 
 # ============================================================

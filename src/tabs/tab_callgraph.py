@@ -173,12 +173,12 @@ def render_zoomable_image(png_path):
 def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
     """Main render function called from dashboard.py"""
 
-    st.header("📌 Call Graph Analysis")
+    st.header("Call Graph Analysis")
     st.write("Generates a static call graph using LLVM/Clang static analysis.")
 
     # Show selected file
     if file_label:
-        st.info(f"📄 Selected file: `{file_label}`")
+        st.info(f"Selected file: `{file_label}`")
     else:
         st.warning("Please upload a C++ file or enable sample files.")
 
@@ -187,7 +187,7 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
         st.session_state.callgraph_png = None
 
     # Analyze button
-    if st.button("🚀 Generate Call Graph", type="primary"):
+    if st.button("Generate Call Graph", type="primary"):
         if cpp_path is None:
             st.error("No file selected.")
         else:
@@ -196,10 +196,10 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     cpp_path, project_root, results_dir
                 )
             if error:
-                st.error(f"❌ Error:\n\n{error}")
+                st.error(f"Error:\n\n{error}")
             elif png_path and os.path.exists(png_path):
                 st.session_state.callgraph_png = png_path
-                st.success("✅ Call graph generated successfully!")
+                st.success("Call graph generated successfully!")
             else:
                 st.error("Call graph image not found after analysis.")
 
@@ -212,7 +212,7 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
         # Download button
         with open(png_path, 'rb') as f:
             st.download_button(
-                label="⬇️ Download Call Graph",
+                label="Download Call Graph",
                 data=f,
                 file_name="callgraph.png",
                 mime="image/png"
@@ -221,12 +221,12 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
         # Raw data expander
         txt_path = os.path.join(project_root, "graph.text")
         if os.path.exists(txt_path):
-            with st.expander("📄 View raw call graph data"):
+            with st.expander("View raw call graph data"):
                 with open(txt_path, 'r') as f:
                     st.code(f.read(), language='text')
 
     # Info box
-    with st.expander("ℹ️ About Call Graph Analysis"):
+    with st.expander("About Call Graph Analysis"):
         st.markdown("""
         **What is a Call Graph?**
         A directed graph showing which functions call which other functions.
