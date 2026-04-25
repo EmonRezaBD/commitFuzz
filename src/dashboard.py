@@ -28,6 +28,13 @@ CALLGRAPH_SCRIPT = os.path.join(PROJECT_ROOT, "CallGraph", "run.sh")
 RESULTS_DIR = os.path.join(PROJECT_ROOT, "results")
 os.makedirs(RESULTS_DIR, exist_ok=True)
 
+# ============================================================
+# SESSION STATE
+# ============================================================
+
+if 'callgraph_png' not in st.session_state:
+    st.session_state.callgraph_png = None
+
 
 # ============================================================
 # CALL GRAPH FUNCTIONS
@@ -214,14 +221,21 @@ with tab1:
             if error:
                 st.error(f"❌ Error generating call graph:\n\n{error}")
             elif png_path and os.path.exists(png_path):
+                st.session_state.callgraph_png = png_path  # save to session state
                 st.success("✅ Call graph generated successfully!")
+            else:
+                st.error("Call graph image not found after analysis.")
 
-                # Display the image with mouse wheel zoom
-                import base64
-                with open(png_path, "rb") as img_f:
-                    encoded = base64.b64encode(img_f.read()).decode()
+    # Display graph from session state (persists across reruns)
+    if st.session_state.callgraph_png and os.path.exists(st.session_state.callgraph_png):
+        png_path = st.session_state.callgraph_png
 
-                zoom_html = f"""
+        # Display the image with mouse wheel zoom
+        import base64
+        with open(png_path, "rb") as img_f:
+            encoded = base64.b64encode(img_f.read()).decode()
+
+        zoom_html = f"""
 <div style="
     overflow: hidden;
     width: 100%;
@@ -244,7 +258,7 @@ with tab1:
     </div>
 </div>
 <p style="font-size:12px; color:gray; margin-top:4px;">
-    🖱️ Scroll to zoom &nbsp;|&nbsp; Click + drag to pan
+    🖱️ Scroll to zoom &nbsp;|&nbsp; Click + drag to pan &nbsp;|&nbsp; Double-click to reset
 </p>
 <script>
     const container = document.getElementById('zoom_container');
@@ -253,7 +267,6 @@ with tab1:
     let scale = 1, posX = 0, posY = 0;
     let dragging = false, startX, startY;
 
-    // Scroll to zoom
     wrapper.addEventListener('wheel', function(e) {{
         e.preventDefault();
         const delta = e.deltaY > 0 ? -0.1 : 0.1;
@@ -261,7 +274,6 @@ with tab1:
         container.style.transform = `translate(${{posX}}px, ${{posY}}px) scale(${{scale}})`;
     }}, {{ passive: false }});
 
-    // Drag to pan
     wrapper.addEventListener('mousedown', function(e) {{
         dragging = true;
         startX = e.clientX - posX;
@@ -279,33 +291,30 @@ with tab1:
         wrapper.style.cursor = 'grab';
     }});
 
-    // Double click to reset
     wrapper.addEventListener('dblclick', function() {{
         scale = 1; posX = 0; posY = 0;
         container.style.transform = `translate(0px, 0px) scale(1)`;
     }});
 </script>
 """
-                import streamlit.components.v1 as components
-                components.html(zoom_html, height=640)
+        import streamlit.components.v1 as components
+        components.html(zoom_html, height=640)
 
-                # Download button
-                with open(png_path, 'rb') as f:
-                    st.download_button(
-                        label="⬇️ Download Call Graph",
-                        data=f,
-                        file_name="callgraph.png",
-                        mime="image/png"
-                    )
+        # Download button — won't clear graph now
+        with open(png_path, 'rb') as f:
+            st.download_button(
+                label="⬇️ Download Call Graph",
+                data=f,
+                file_name="callgraph.png",
+                mime="image/png"
+            )
 
-                # Show raw graph.text as expandable
-                txt_path = os.path.join(PROJECT_ROOT, "graph.text")
-                if os.path.exists(txt_path):
-                    with st.expander("📄 View raw call graph data"):
-                        with open(txt_path, 'r') as f:
-                            st.code(f.read(), language='text')
-            else:
-                st.error("Call graph image not found after analysis.")
+        # Show raw graph.text as expandable
+        txt_path = os.path.join(PROJECT_ROOT, "graph.text")
+        if os.path.exists(txt_path):
+            with st.expander("📄 View raw call graph data"):
+                with open(txt_path, 'r') as f:
+                    st.code(f.read(), language='text')
 
     # Info box at bottom
     with st.expander("ℹ️ About Call Graph Analysis"):
