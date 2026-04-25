@@ -32,8 +32,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 # ============================================================
 
 from tabs.tab_callgraph import render_callgraph_tab
+from tabs.tab_cfg       import render_cfg_tab
 # Future imports (uncomment as you build each tab):
-# from tabs.tab_cfg       import render_cfg_tab
 # from tabs.tab_heatmap   import render_heatmap_tab
 # from tabs.tab_riskscore import render_riskscore_tab
 # from tabs.tab_insights  import render_insights_tab
@@ -162,8 +162,13 @@ with tab1:
     )
 
 with tab2:
-    st.header("🌊 Differential CFG")
-    st.info("Coming soon — will show before/after control flow graphs side by side.")
+    render_cfg_tab(
+        before_path=before_path,
+        after_path=after_path,
+        before_label=before_label,
+        after_label=after_label,
+        results_dir=RESULTS_DIR
+    )
 
 with tab3:
     st.header("🌡️ Risk Heatmap")
