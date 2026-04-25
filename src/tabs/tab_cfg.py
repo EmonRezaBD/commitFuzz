@@ -181,9 +181,9 @@ def draw_cfg(ax, G, status_map, title):
               for n, d in G.nodes(data=True)}
 
     nx.draw_networkx_nodes(G, pos, ax=ax, node_color=node_colors,
-                           node_size=3000, alpha=0.92)
+                           node_size=4000, alpha=0.92)
     nx.draw_networkx_labels(G, pos, labels=labels, ax=ax,
-                            font_size=6, font_color='white', font_weight='bold')
+                            font_size=7, font_color='white', font_weight='bold')
     nx.draw_networkx_edges(G, pos, ax=ax, arrows=True,
                            arrowsize=15, edge_color='#444444',
                            connectionstyle='arc3,rad=0.05',
@@ -204,6 +204,7 @@ def generate_cfg_image(before_code, after_code, title, output_path):
     diff       = diff_cfgs(cfg_before, cfg_after)
 
     fig, axes = plt.subplots(1, 2, figsize=(36, 22))
+    fig.subplots_adjust(wspace=0.05)  
     fig.suptitle(title, fontsize=15, fontweight='bold', y=1.01)
 
     draw_cfg(axes[0], cfg_before, diff['before_status'], 'BEFORE')
