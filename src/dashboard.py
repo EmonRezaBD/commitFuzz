@@ -17,6 +17,81 @@ st.set_page_config(
 )
 
 # ============================================================
+# GLOBAL CSS — larger text + tab hover effects
+# ============================================================
+
+st.markdown("""
+<style>
+    /* ── Global font size ── */
+    html, body, [class*="css"] {
+        font-size: 16px !important;
+    }
+    .stMarkdown p, .stMarkdown li {
+        font-size: 16px !important;
+    }
+    .stCaption {
+        font-size: 14px !important;
+    }
+    label, .stSelectbox label, .stFileUploader label {
+        font-size: 15px !important;
+        font-weight: 500 !important;
+    }
+
+    /* ── Tab styling ── */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: #f8f9fa;
+        padding: 6px 8px;
+        border-radius: 10px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        font-size: 15px !important;
+        font-weight: 600;
+        padding: 10px 20px;
+        border-radius: 8px;
+        color: #444;
+        background-color: transparent;
+        border: none;
+        transition: background-color 0.2s ease, color 0.2s ease,
+                    transform 0.15s ease;
+    }
+    .stTabs [data-baseweb="tab"]:hover {
+        background-color: #e0e7ff;
+        color: #1a1aff;
+        transform: translateY(-2px);
+        cursor: pointer;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #1a1aff !important;
+        color: white !important;
+        border-radius: 8px;
+    }
+
+    /* ── Sidebar text ── */
+    .css-1d391kg, [data-testid="stSidebar"] {
+        font-size: 15px !important;
+    }
+    [data-testid="stSidebar"] .stMarkdown p {
+        font-size: 15px !important;
+    }
+
+    /* ── Metric labels ── */
+    [data-testid="stMetricLabel"] {
+        font-size: 15px !important;
+    }
+    [data-testid="stMetricValue"] {
+        font-size: 22px !important;
+    }
+
+    /* ── Button ── */
+    .stButton > button {
+        font-size: 15px !important;
+        padding: 10px 24px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# ============================================================
 # PATHS
 # ============================================================
 
@@ -35,8 +110,7 @@ from tabs.tab_callgraph import render_callgraph_tab
 from tabs.tab_cfg       import render_cfg_tab
 from tabs.tab_heatmap   import render_heatmap_tab
 from tabs.tab_riskscore import render_riskscore_tab
-# Future imports (uncomment as you build each tab):
-# from tabs.tab_insights  import render_insights_tab
+from tabs.tab_insights  import render_insights_tab
 
 # ============================================================
 # HELPER
@@ -57,11 +131,7 @@ def save_uploaded_file(uploaded_file, suffix='.cpp'):
 # SIDEBAR
 # ============================================================
 
-st.sidebar.image(
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e9/LSU_Tigers_logo.svg/200px-LSU_Tigers_logo.svg.png",
-    width=80
-)
-st.sidebar.title("CommitFuzz")
+st.sidebar.title("🔍 CommitFuzz")
 st.sidebar.caption("Commit-Level Risk Scoring & Visualization")
 st.sidebar.divider()
 
@@ -137,10 +207,6 @@ else:
 # MAIN AREA
 # ============================================================
 
-st.title("🔍 CommitFuzz: Commit-Level Risk Scoring")
-st.caption("A static analysis tool for predicting bug introduction from code changes")
-st.divider()
-
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📌 Call Graph",
     "🌊 Differential CFG",
@@ -189,5 +255,10 @@ with tab4:
     )
 
 with tab5:
-    st.header("💡 Actionable Insights")
-    st.info("Coming soon — will show review checklist and high-risk lines to inspect.")
+    render_insights_tab(
+        before_path=before_path,
+        after_path=after_path,
+        before_label=before_label,
+        after_label=after_label,
+        results_dir=RESULTS_DIR
+    )
