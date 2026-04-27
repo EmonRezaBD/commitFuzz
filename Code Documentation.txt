@@ -1,0 +1,262 @@
+CommitFuzz - Features and Working Documentation
+================================================
+
+Overview
+--------
+CommitFuzz is a commit-level risk scoring and visualization framework for C/C++ projects.
+It helps developers assess the risk of code changes before they are merged by combining
+static analysis, control flow visualization, and risk scoring.
+
+
+================================================
+FEATURE 1: CALL GRAPH ANALYSIS
+================================================
+
+What it does:
+  Generates a visual map of which functions call which other functions in a C/C++ file.
+
+How it works (step by step):
+
+  Step 1: User uploads a C/C++ file (or uses the uploaded "After Commit" file)
+          via the sidebar in the Streamlit dashboard.
+
+  Step 2: The dashboard calls run_llvm_callgraph() in tab_callgraph.py.
+          This function runs a shell command:
+              bash CallGraph/run.sh <uploaded_file.cpp>
+
+  Step 3: run.sh does two things:
+              clang -S -emit-llvm <file> -o temp.bc
+              opt -load libCallGraph.so -callgraph temp.bc
+          Clang compiles the C++ file into LLVM IR (intermediate representation).
+          The LLVM opt tool then runs the CallGraph pass on the IR
+          to extract all function call relationships.
+
+  Step 4: LLVM outputs two files:
+              graph.dot   → graphviz format for visualization
+              graph.text  → raw text format: [caller]:[callee1],[callee2]
+
+  Step 5: Python reads graph.dot and runs c++filt to demangle function names.
+          For example: _Z14generateReportPKc → generateReport
+          The cleaned dot file is rendered to PNG using:
+              dot -Tpng graph_clean.dot -o callgraph.png
+
+  Step 6: The PNG is displayed in the dashboard with zoom and pan support.
+
+Sub-feature: Function-Specific Call Graph
+  - User types or selects a target function name.
+  - Python parses graph.text into a dictionary: {caller: [callee1, callee2]}
+  - Finds all callers (who calls this function) and callees (what it calls).
+  - Builds a small focused subgraph using NetworkX.
+  - Renders it with color coding:
+        Blue   = callers (functions that call the selected function)
+        Orange = the selected function
+        Green  = callees (functions called by the selected function)
+
+
+================================================
+FEATURE 2: DIFFERENTIAL CFG (Control Flow Graph)
+================================================
+
+What it does:
+  Compares how the internal execution flow of code changed between two versions
+  (before and after a commit) by generating side-by-side CFGs.
+
+How it works (step by step):
+
+  Step 1: User uploads Before and After commit files via the sidebar.
+
+  Step 2: parse_blocks() in tab_cfg.py reads the source code line by line.
+          It splits the code into Basic Blocks at control flow boundaries:
+              if, for, while, return, break, case, {, }
+          Each block is a sequential chunk of code that executes together.
+          Blocks are numbered B0, B1, B2... automatically.
+
+  Step 3: build_cfg() creates a directed graph (NetworkX DiGraph):
+              Nodes = basic blocks
+              Edges = execution transitions between blocks
+          Edge types: seq (sequential), true/false (if branches),
+                      loop_body/loop_exit (for/while loops), exit (return/break)
+
+  Step 4: diff_cfgs() compares the before and after CFGs node by node:
+              unchanged = same code in same position
+              modified  = same position, different code
+              deleted   = exists in before, missing in after
+              added     = missing in before, exists in after
+
+  Step 5: draw_cfg() renders both CFGs side by side with color coding:
+              Gray   = unchanged block
+              Orange = modified block
+              Red    = deleted block
+              Green  = added block
+
+  Step 6: The image is saved and displayed in the dashboard with zoom/pan.
+
+Sub-feature: Function-Specific CFG
+  - User types a function name.
+  - Python extracts just that function's body from both files using regex.
+  - Generates CFG only for that function (before and after).
+  - If the function did not change → shows a warning message.
+  - If the function is new or removed → shows only the available version.
+  - Uses elliptical nodes for better readability.
+
+
+================================================
+FEATURE 3: RISK HEATMAP
+================================================
+
+What it does:
+  Visualizes code changes line by line, colored by how risky each changed line is.
+
+How it works (step by step):
+
+  Step 1: User uploads Before and After commit files.
+
+  Step 2: Python's difflib.ndiff() compares the two files line by line:
+              Lines starting with '+' = added lines
+              Lines starting with '-' = deleted lines
+              Lines starting with ' ' = unchanged lines
+
+  Step 3: Each added line is scored using score_line():
+          Based on McCabe (1976) cyclomatic complexity theory.
+          Decision point keywords score +2 each: if, for, while, switch, catch, &&, ||, ?
+          Function calls score +1 each.
+          Final classification:
+              HIGH   = score >= 2 (contains control flow keywords)
+              MEDIUM = score >= 1 (contains function calls only)
+              LOW    = score  = 0 (simple assignments/declarations)
+
+  Step 4: generate_heatmap_image() draws the source code as a colored image:
+              Red    = added line, HIGH risk
+              Orange = added line, MEDIUM risk
+              Green  = added line, LOW risk
+              Gray   = deleted line
+              White  = unchanged line
+          Each line is rendered as a colored rectangle with the code text inside.
+
+  Step 5: The heatmap image is saved and displayed with zoom/pan support.
+
+
+================================================
+FEATURE 4: RISK SCORE
+================================================
+
+What it does:
+  Quantifies the overall risk of a commit into a single score using three metrics.
+
+How it works (step by step):
+
+  Step 1: User uploads Before and After commit files.
+
+  Step 2: Three metrics are computed:
+
+      Metric 1 - Cyclomatic Complexity Delta (McCabe 1976):
+          Count decision points in before code (if, for, while, &&, ||, etc.)
+          Count decision points in after code.
+          Delta = after_count - before_count
+          Positive delta = code got more complex = higher risk.
+
+      Metric 2 - Control Flow Alteration Score (Nagappan & Ball 2005):
+          Count control flow keywords in added lines.
+          Count control flow keywords in deleted lines.
+          Score = added_flow + deleted_flow
+          Any change to control flow (addition OR deletion) = risk.
+
+      Metric 3 - Change Size Ratio (Moser et al. 2008):
+          Ratio = (lines added + lines deleted) / lines in before file
+          A small function that changed a lot = higher relative risk.
+
+  Step 3: Each metric is normalized to [0, 1] using min-max normalization.
+
+  Step 4: Final risk score = weighted combination:
+              risk = 0.33 × norm_CC + 0.33 × norm_flow + 0.34 × norm_ratio
+
+  Step 5: Risk is classified using tertile thresholds (Arisholm et al. 2010):
+              LOW    = score < 0.3
+              MEDIUM = 0.3 <= score < 0.6
+              HIGH   = score >= 0.6
+
+  Step 6: Results are displayed as:
+          - A gauge/speedometer chart showing overall risk level.
+          - A bar chart showing each metric's normalized score.
+          - A detailed metrics table with raw and normalized values.
+
+
+================================================
+FEATURE 5: ACTIONABLE INSIGHTS
+================================================
+
+What it does:
+  Automatically generates a tailored review checklist based on what changed.
+
+How it works (step by step):
+
+  Step 1: User uploads Before and After commit files.
+
+  Step 2: Python analyzes the changes to detect:
+          - Was cyclomatic complexity increased?
+          - Were new functions added?
+          - Were functions removed?
+          - Are there memory operations (malloc, free, new, delete)?
+          - Is the change very large (>50 lines)?
+          - Is the overall risk HIGH?
+
+  Step 3: generate_checklist() builds a checklist based on findings:
+          - Always includes a General Review section.
+          - Adds "Control Flow Changes" section if CC increased.
+          - Adds "New Functions Added" section if new functions detected.
+          - Adds "Memory Management" section if malloc/free/new/delete found.
+          - Adds "High Risk Priority Review" section if risk = HIGH.
+          - Adds "Large Change" warning if change is >50 lines.
+
+  Step 4: Risk score is also computed and displayed at the top.
+
+  Step 5: The checklist is shown as interactive checkboxes in the dashboard.
+          A note at the bottom states all reviews are conducted by QA experts.
+
+  Step 6: Change Summary (CC Before, CC After, CC Delta) is displayed
+          at the bottom for quick reference.
+
+
+================================================
+DASHBOARD
+================================================
+
+How it works:
+  - Built with Streamlit — runs as a web app at http://localhost:8501
+  - Sidebar: Upload C++ source file, Before commit file, After commit file.
+  - Toggle "Use sample files" to use built-in data_analyzer V1/V2 for testing.
+  - Five tabs: Call Graph, Differential CFG, Risk Heatmap, Risk Score, Actionable Insights.
+  - All results persist using st.session_state so clicking buttons doesn't clear results.
+  - All visualizations support mouse wheel zoom, click+drag pan, double-click reset.
+  - Gray scrollbars are shown on all display windows.
+  - Download buttons available for all generated images.
+
+Run command:
+  source venv/bin/activate
+  streamlit run src/dashboard.py
+
+
+================================================
+TECH STACK
+================================================
+
+  Language:        Python 3.8+
+  Dashboard:       Streamlit
+  LLVM Analysis:   Clang + LLVM opt pass (CallGraph)
+  Graph Building:  NetworkX
+  Visualization:   Matplotlib
+  Diff Analysis:   Python difflib
+  Name Demangling: c++filt (GNU binutils)
+  Graphviz:        dot command (render .dot to PNG)
+
+
+================================================
+REFERENCES
+================================================
+
+  McCabe, T.J. (1976). A Complexity Measure. IEEE Transactions on Software Engineering.
+  Nagappan & Ball (2005). Use of Relative Code Churn Measures to Predict System Defect Density. ICSE.
+  Moser, Pedrycz & Succi (2008). A Comparative Analysis of Change Metrics for Defect Prediction. ICSE.
+  Arisholm et al. (2010). A Systematic Investigation of Methods to Build Fault Prediction Models. JSS.
+  Grove et al. (1997). Call Graph Construction in Object-Oriented Languages. OOPSLA.
+  LLVM CallGraph pass: https://github.com/bernardnongpoh/CallGraph
