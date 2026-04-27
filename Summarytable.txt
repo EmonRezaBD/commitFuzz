@@ -1,0 +1,10 @@
+Summary Table
+
+Tool / Package                Where Used        Purpose
+---------------------------------------------------------------
+requirements.txt packages     Windows/Ubuntu    Run the Python dashboard
+LLVM 14 + Clang               Ubuntu VM         Generate the call graph
+CMake                         Ubuntu VM         Build the LLVM pass
+Graphviz + xdot               Ubuntu VM         Visualize the graph
+unrar                         Ubuntu VM         Extract files copied from Windows
+networkx                      Ubuntu VM         Parse and build the graph
