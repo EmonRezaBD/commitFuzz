@@ -176,15 +176,53 @@ def render_function_subgraph(G, roles, target_func, output_path):
     except Exception:
         pos = nx.spring_layout(G, seed=42, k=3.0)
 
-    fig, ax = plt.subplots(figsize=(14, 8))
-    nx.draw_networkx_nodes(G, pos, ax=ax, node_color=node_colors,
-                           node_size=3500, alpha=0.92)
-    nx.draw_networkx_labels(G, pos, ax=ax, font_size=10,
-                            font_color='white', font_weight='bold')
+    fig, ax = plt.subplots(figsize=(16, 9))
+    ax.set_aspect('auto')
+
+    # Auto-fit axis limits first
+    if pos:
+        xs = [v[0] for v in pos.values()]
+        ys = [v[1] for v in pos.values()]
+        x_pad = (max(xs) - min(xs)) * 0.3 + 100
+        y_pad = (max(ys) - min(ys)) * 0.3 + 80
+        ax.set_xlim(min(xs) - x_pad, max(xs) + x_pad)
+        ax.set_ylim(min(ys) - y_pad, max(ys) + y_pad)
+
+    # Draw edges first
     nx.draw_networkx_edges(G, pos, ax=ax, arrows=True,
-                           arrowsize=25, edge_color='#444444',
-                           connectionstyle='arc3,rad=0.1',
-                           min_source_margin=25, min_target_margin=25)
+                           arrowsize=20, edge_color='#555555',
+                           connectionstyle='arc3,rad=0.05',
+                           min_source_margin=45, min_target_margin=45)
+
+    # Draw elliptical nodes using ax.transData + FancyBboxPatch
+    renderer = fig.canvas.get_renderer()
+    for node in G.nodes():
+        x, y  = pos[node]
+        role  = roles.get(node, 'callee')
+        color = color_map.get(role, '#44bb44')
+        label = node
+
+        # Measure text width to size ellipse dynamically
+        txt = ax.text(x, y, label, ha='center', va='center',
+                      fontsize=9, fontweight='bold', color='white',
+                      zorder=5)
+
+        # Get text bounding box in display coords, convert to data coords
+        fig.canvas.draw()
+        bbox = txt.get_window_extent(renderer=renderer)
+        inv  = ax.transData.inverted()
+        bbox_data = inv.transform([[bbox.x0, bbox.y0],
+                                   [bbox.x1, bbox.y1]])
+        w = (bbox_data[1][0] - bbox_data[0][0]) * 1.8
+        h = (bbox_data[1][1] - bbox_data[0][1]) * 2.8
+
+        ellipse = mpatches.Ellipse(
+            (x, y), width=max(w, 60), height=max(h, 25),
+            facecolor=color, edgecolor='white',
+            linewidth=1.5, alpha=0.95, zorder=4
+        )
+        ax.add_patch(ellipse)
+        txt.set_zorder(5)
 
     ax.set_title(f"Call Graph: {target_func}()",
                  fontsize=14, fontweight='bold', pad=15)
@@ -265,16 +303,11 @@ def render_zoomable_image(png_path, height=640):
 def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
     """Main render function called from dashboard.py"""
 
-<<<<<<< HEAD
     st.header("📌 Call Graph Analysis")
     st.write("Generates static call graphs using LLVM/Clang analysis.")
-=======
-    st.header("Call Graph Analysis")
-    st.write("Generates a static call graph using LLVM/Clang static analysis.")
->>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
 
     if file_label:
-        st.info(f"Selected file: `{file_label}`")
+        st.info(f"📄 Selected file: `{file_label}`")
     else:
         st.warning("Please upload a C++ file or enable sample files.")
 
@@ -283,17 +316,12 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
         if key not in st.session_state:
             st.session_state[key] = None
 
-<<<<<<< HEAD
     # ── Feature 1: Full Call Graph ─────────────────────────────
     st.subheader("1️⃣ Full File Call Graph")
     st.caption("Shows all function call relationships in the entire file.")
 
     if st.button("🚀 Generate Full Call Graph", type="primary",
                  key="btn_full_cg"):
-=======
-    # Analyze button
-    if st.button("Generate Call Graph", type="primary"):
->>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
         if cpp_path is None:
             st.error("No file selected.")
         else:
@@ -302,7 +330,6 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     cpp_path, project_root, results_dir
                 )
             if error:
-<<<<<<< HEAD
                 st.error(f"❌ {error}")
             elif png_path and os.path.exists(png_path):
                 st.session_state.callgraph_png = png_path
@@ -313,12 +340,6 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     clean_map = demangle_map(raw_map)
                     st.session_state.call_map = clean_map
                 st.success("✅ Full call graph generated!")
-=======
-                st.error(f"Error:\n\n{error}")
-            elif png_path and os.path.exists(png_path):
-                st.session_state.callgraph_png = png_path
-                st.success("Call graph generated successfully!")
->>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
             else:
                 st.error("Call graph image not found.")
 
@@ -332,7 +353,6 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
 
     st.divider()
 
-<<<<<<< HEAD
     # ── Feature 2: Function-Specific Call Graph ────────────────
     st.subheader("2️⃣ Function-Specific Call Graph")
     st.caption("Focused view: who calls the function + what it calls.")
@@ -413,26 +433,9 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     file_name="func_callgraph.png", mime="image/png",
                     key="dl_func_cg"
                 )
-=======
-        # Download button
-        with open(png_path, 'rb') as f:
-            st.download_button(
-                label="Download Call Graph",
-                data=f,
-                file_name="callgraph.png",
-                mime="image/png"
-            )
-
-        # Raw data expander
-        txt_path = os.path.join(project_root, "graph.text")
-        if os.path.exists(txt_path):
-            with st.expander("View raw call graph data"):
-                with open(txt_path, 'r') as f:
-                    st.code(f.read(), language='text')
->>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
 
     # Info box
-    with st.expander("About Call Graph Analysis"):
+    with st.expander("ℹ️ About Call Graph Analysis"):
         st.markdown("""
         **Feature 1 — Full Call Graph:**
         All function relationships in the file. Generated via LLVM IR analysis.
