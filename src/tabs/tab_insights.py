@@ -88,7 +88,7 @@ def generate_checklist(before_code, after_code, risk_level):
 
     # Always include
     checklist.append({
-        'category': 'General Review',
+        'category': '🔍 General Review',
         'items': [
             "Review all added lines for correctness and edge cases",
             "Ensure the commit does not break existing functionality",
@@ -99,7 +99,7 @@ def generate_checklist(before_code, after_code, risk_level):
     # Complexity-related
     if delta > 0:
         checklist.append({
-            'category': 'Control Flow Changes',
+            'category': '🔀 Control Flow Changes',
             'items': [
                 f"Cyclomatic complexity increased by {delta:+d} — verify all new branches are tested",
                 "Check all new if/else branches for boundary conditions",
@@ -111,7 +111,7 @@ def generate_checklist(before_code, after_code, risk_level):
     # New functions added
     if added_funcs:
         checklist.append({
-            'category': 'New Functions Added',
+            'category': '➕ New Functions Added',
             'items': [
                 f"New function(s) detected: {', '.join(added_funcs)}",
                 "Ensure new functions have proper input validation",
@@ -123,7 +123,7 @@ def generate_checklist(before_code, after_code, risk_level):
     # Functions removed
     if removed_funcs:
         checklist.append({
-            'category': 'Functions Removed',
+            'category': '➖ Functions Removed',
             'items': [
                 f"Removed function(s): {', '.join(removed_funcs)}",
                 "Verify no other code depends on the removed functions",
@@ -134,7 +134,7 @@ def generate_checklist(before_code, after_code, risk_level):
     # Memory-related
     if re.search(r'\b(malloc|free|new|delete)\b', after_code):
         checklist.append({
-            'category': 'Memory Management',
+            'category': '🧠 Memory Management',
             'items': [
                 "Check all malloc/new calls have corresponding free/delete",
                 "Verify no memory leak was introduced in new code paths",
@@ -146,7 +146,7 @@ def generate_checklist(before_code, after_code, risk_level):
     # HIGH risk level specific
     if risk_level == 'HIGH':
         checklist.append({
-            'category': 'High Risk — Priority Review',
+            'category': '🚨 High Risk — Priority Review',
             'items': [
                 "This commit scores HIGH risk — prioritize for code review",
                 "Consider fuzzing the modified function for pathological inputs",
@@ -158,7 +158,7 @@ def generate_checklist(before_code, after_code, risk_level):
     # Large change
     if added + deleted > 50:
         checklist.append({
-            'category': 'Large Change',
+            'category': '📦 Large Change',
             'items': [
                 f"{added} lines added, {deleted} lines deleted — consider splitting into smaller commits",
                 "Large changes are harder to review — ensure thorough testing",
@@ -210,19 +210,19 @@ def render_insights_tab(before_path, after_path,
                         results_dir):
     """Main render function called from dashboard.py"""
 
-    st.header("Actionable Insights")
+    st.header("💡 Actionable Insights")
     st.write("Tailored review checklist and recommendations based on detected code changes.")
 
     # Show selected files
     col1, col2 = st.columns(2)
     with col1:
         if before_label:
-            st.info(f"Before: `{before_label}`")
+            st.info(f"📄 Before: `{before_label}`")
         else:
             st.warning("No before file selected.")
     with col2:
         if after_label:
-            st.info(f"After: `{after_label}`")
+            st.info(f"📄 After: `{after_label}`")
         else:
             st.warning("No after file selected.")
 
@@ -231,7 +231,7 @@ def render_insights_tab(before_path, after_path,
         st.session_state.insights_data = None
 
     # Analyze button
-    if st.button("Generate Insights", type="primary"):
+    if st.button("🚀 Generate Insights", type="primary"):
         if not before_path or not after_path:
             st.error("Please provide both before and after files.")
         else:
@@ -266,10 +266,10 @@ def render_insights_tab(before_path, after_path,
                         'risk_level':  risk_level,
                         'risk_score':  risk_score,
                     }
-                    st.success("Insights generated successfully!")
+                    st.success("✅ Insights generated successfully!")
 
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(f"❌ Error: {e}")
 
     # Display results
     if st.session_state.insights_data:
@@ -287,57 +287,27 @@ def render_insights_tab(before_path, after_path,
 
         st.divider()
 
-        # Two columns: checklist + reviewer suggestions
-        col1, col2 = st.columns([2, 1])
+        # Checklist only (full width)
+        st.subheader("✅ Review Checklist")
+        for section in d['checklist']:
+            with st.expander(section['category'], expanded=True):
+                for item in section['items']:
+                    st.checkbox(item, key=f"chk_{item[:40]}")
 
-        with col1:
-            st.subheader("Review Checklist")
-            for section in d['checklist']:
-                with st.expander(section['category'], expanded=True):
-                    for item in section['items']:
-                        st.checkbox(item, key=f"chk_{item[:40]}")
-
-        with col2:
-            st.subheader("Suggested Reviewers")
-            for role, reason in d['reviewers']:
-                st.markdown(f"**{role}**")
-                st.caption(reason)
-                st.divider()
+        st.divider()
+        st.caption("📋 All reviews are conducted by QA experts based on the checklist above.")
 
         st.divider()
 
         # Change summary
-        st.subheader("Change Summary")
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric("CC Before",    d['before_cc'])
-        c2.metric("CC After",     d['after_cc'])
-        c3.metric("CC Delta",     f"{d['delta']:+d}")
-        c4.metric("New Functions", len(d['added_f']))
-
-        # High risk lines
-        if d['high_lines']:
-            st.divider()
-            st.subheader("Lines Requiring Careful Inspection")
-            for line in d['high_lines']:
-                st.code(line, language='cpp')
-
-        # New / removed functions
-        if d['added_f'] or d['removed_f']:
-            st.divider()
-            col1, col2 = st.columns(2)
-            with col1:
-                if d['added_f']:
-                    st.subheader("New Functions")
-                    for f in d['added_f']:
-                        st.markdown(f"- `{f}()`")
-            with col2:
-                if d['removed_f']:
-                    st.subheader("Removed Functions")
-                    for f in d['removed_f']:
-                        st.markdown(f"- `{f}()`")
+        st.subheader("📊 Change Summary")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("CC Before", d['before_cc'])
+        c2.metric("CC After",  d['after_cc'])
+        c3.metric("CC Delta",  f"{d['delta']:+d}")
 
     # Info box
-    with st.expander("About Actionable Insights"):
+    with st.expander("ℹ️ About Actionable Insights"):
         st.markdown("""
         **What are Actionable Insights?**
         Automatically generated review guidance based on what specifically changed in the commit.
@@ -347,10 +317,4 @@ def render_insights_tab(before_path, after_path,
         - Detects memory operations → adds memory safety checks
         - Detects control flow changes → adds branch/loop checks
         - Adjusts priority based on overall risk score
-
-        **Suggested reviewers** are based on the type of changes:
-        - Memory changes → Memory Safety Expert
-        - Control flow changes → Algorithm Reviewer
-        - Removed functions → API Compatibility Reviewer
-        - New functions → Unit Test Reviewer
         """)

@@ -316,46 +316,53 @@ def render_zoomable_image(png_path, height=640):
 # MAIN RENDER FUNCTION
 # ============================================================
 
-def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
+def render_callgraph_tab(cpp_path, file_label, project_root, results_dir,
+                         before_path=None, after_path=None,
+                         before_label=None, after_label=None):
     """Main render function called from dashboard.py"""
 
     st.header("📌 Call Graph Analysis")
     st.write("Generates static call graphs using LLVM/Clang analysis.")
 
-    if file_label:
-        st.info(f"📄 Selected file: `{file_label}`")
-    else:
-        st.warning("Please upload a C++ file or enable sample files.")
-
     # Session state
-    for key in ['callgraph_png', 'func_subgraph_png', 'call_map']:
+    for key in ['callgraph_png', 'func_subgraph_png', 'call_map',
+                'cg_before_png', 'cg_after_png',
+                'cg_before_map', 'cg_after_map']:
         if key not in st.session_state:
             st.session_state[key] = None
 
-    # ── Feature 1: Full Call Graph ─────────────────────────────
+    # ── Feature 1: Full File Call Graph ────────────────────────
     st.subheader("1️⃣ Full File Call Graph")
     st.caption("Shows all function call relationships in the entire file.")
 
+    # Determine active file and label
+    active_path  = after_path if after_path else cpp_path
+    active_label = after_label if after_path else file_label
+
+    if active_label:
+        st.info(f"📄 Selected file: `{active_label}`")
+    else:
+        st.warning("Please upload a C++ file or enable sample files.")
+
     if st.button("🚀 Generate Full Call Graph", type="primary",
                  key="btn_full_cg"):
-        if cpp_path is None:
+        if active_path is None:
             st.error("No file selected.")
         else:
             with st.spinner("Running LLVM analysis..."):
                 png_path, error = run_llvm_callgraph(
-                    cpp_path, project_root, results_dir
+                    active_path, project_root, results_dir
                 )
             if error:
                 st.error(f"❌ {error}")
             elif png_path and os.path.exists(png_path):
                 st.session_state.callgraph_png = png_path
-                # Parse graph.text for Feature 2
                 txt_path = os.path.join(project_root, "graph.text")
                 if os.path.exists(txt_path):
                     raw_map   = parse_graph_text(txt_path)
                     clean_map = demangle_map(raw_map)
                     st.session_state.call_map = clean_map
-                st.success("✅ Full call graph generated!")
+                st.success(f"✅ Call graph generated from `{active_label}`!")
             else:
                 st.error("Call graph image not found.")
 
@@ -369,7 +376,7 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
 
     st.divider()
 
-    # ── Feature 2: Function-Specific Call Graph ────────────────
+    # ── Feature 2: Function-Specific Call Graph ─────────────────
     st.subheader("2️⃣ Function-Specific Call Graph")
     st.caption("Focused view: who calls the function + what it calls.")
 
@@ -391,7 +398,6 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                 options=["— select —"] + func_names
             )
 
-        # Resolve target
         target_func = None
         if typed.strip():
             target_func = typed.strip()
@@ -423,16 +429,15 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     f"called by **{len(callers)}** | "
                     f"calls **{len(callees)}**"
                 )
-
                 c1, c2 = st.columns(2)
                 with c1:
-                    st.markdown("**🔵 Callers (call this function):**")
+                    st.markdown("**🔵 Callers:**")
                     if callers:
                         for c in callers: st.markdown(f"- `{c}`")
                     else:
                         st.caption("No callers in this file")
                 with c2:
-                    st.markdown("**🟢 Callees (called by this function):**")
+                    st.markdown("**🟢 Callees:**")
                     if callees:
                         for c in callees: st.markdown(f"- `{c}`")
                     else:
@@ -440,26 +445,20 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
 
         if st.session_state.func_subgraph_png and \
            os.path.exists(st.session_state.func_subgraph_png):
-            render_zoomable_image(
-                st.session_state.func_subgraph_png, height=550
-            )
+            render_zoomable_image(st.session_state.func_subgraph_png, height=550)
             with open(st.session_state.func_subgraph_png, 'rb') as f:
-                st.download_button(
-                    "⬇️ Download Function Call Graph", data=f,
-                    file_name="func_callgraph.png", mime="image/png",
-                    key="dl_func_cg"
-                )
+                st.download_button("⬇️ Download Function Call Graph", data=f,
+                                   file_name="func_callgraph.png", mime="image/png",
+                                   key="dl_func_cg")
 
     # Info box
     with st.expander("ℹ️ About Call Graph Analysis"):
         st.markdown("""
-        **Feature 1 — Full Call Graph:**
-        All function relationships in the file. Generated via LLVM IR analysis.
+        **Feature 1 — Full Call Graph:** All relationships in one file via LLVM.
+        When Before/After commit files are uploaded, generates from the **After** commit file.
 
         **Feature 2 — Function-Specific:**
-        - 🔵 **Blue** = callers (functions that call the selected function)
-        - 🟠 **Orange** = selected function
-        - 🟢 **Green** = callees (functions the selected function calls)
+        - 🔵 Blue = callers | 🟠 Orange = selected | 🟢 Green = callees
 
         **Reference:** Grove et al. (1997) "Call Graph Construction in Object-Oriented Languages"
         """)
