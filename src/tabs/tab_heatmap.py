@@ -162,26 +162,44 @@ def render_zoomable_image(png_path, height=800):
     with open(png_path, "rb") as f:
         encoded = base64.b64encode(f.read()).decode()
 
+    uid = f"hm_{height}"
     html = f"""
-<div style="overflow:hidden; width:100%; height:{height}px;
-            border:1px solid #ddd; border-radius:8px;
-            background:#fff; position:relative; cursor:grab;">
-    <div id="hm_container" style="transform-origin:top left;
-                                   position:absolute; top:0; left:0;">
-        <img src="data:image/png;base64,{encoded}"
-             style="display:block; width:100%;"/>
-    </div>
+<style>
+  #wrap_{uid} {{
+    overflow: auto;
+    width: 100%;
+    height: {height}px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fff;
+    position: relative;
+    cursor: grab;
+    scrollbar-width: thin;
+    scrollbar-color: #aaaaaa #f0f0f0;
+  }}
+  #wrap_{uid}::-webkit-scrollbar {{ width:14px; height:14px; }}
+  #wrap_{uid}::-webkit-scrollbar-track {{ background:#f0f0f0; border-radius:4px; }}
+  #wrap_{uid}::-webkit-scrollbar-thumb {{ background:#aaaaaa; border-radius:4px; }}
+  #wrap_{uid}::-webkit-scrollbar-thumb:hover {{ background:#888888; }}
+</style>
+<div id="wrap_{uid}">
+  <div id="hm_container_{uid}" style="transform-origin:top left;
+                                       position:absolute; top:0; left:0; width:100%;">
+    <img src="data:image/png;base64,{encoded}"
+         style="display:block; width:100%;"/>
+  </div>
 </div>
 <p style="font-size:12px; color:gray; margin-top:4px;">
-    🖱️ Scroll to zoom &nbsp;|&nbsp; Click + drag to pan &nbsp;|&nbsp; Double-click to reset
+  🖱️ Scroll to zoom &nbsp;|&nbsp; Click + drag to pan &nbsp;|&nbsp; Double-click to reset
 </p>
 <script>
-    const c = document.getElementById('hm_container');
-    const w = c.parentElement;
+(function() {{
+    const c = document.getElementById('hm_container_{uid}');
+    const w = document.getElementById('wrap_{uid}');
     let scale=1, px=0, py=0, drag=false, sx, sy;
     w.addEventListener('wheel', e => {{
         e.preventDefault();
-        scale = Math.min(Math.max(0.3, scale+(e.deltaY>0?-0.1:0.1)), 5);
+        scale=Math.min(Math.max(0.3,scale+(e.deltaY>0?-0.1:0.1)),5);
         c.style.transform=`translate(${{px}}px,${{py}}px) scale(${{scale}})`;
     }}, {{passive:false}});
     w.addEventListener('mousedown', e => {{
@@ -193,11 +211,12 @@ def render_zoomable_image(png_path, height=800):
         px=e.clientX-sx; py=e.clientY-sy;
         c.style.transform=`translate(${{px}}px,${{py}}px) scale(${{scale}})`;
     }});
-    window.addEventListener('mouseup', ()=>{{ drag=false; w.style.cursor='grab'; }});
-    w.addEventListener('dblclick', ()=>{{
-        scale=1; px=0; py=0;
+    window.addEventListener('mouseup',()=>{{drag=false;w.style.cursor='grab';}});
+    w.addEventListener('dblclick',()=>{{
+        scale=1;px=0;py=0;
         c.style.transform='translate(0px,0px) scale(1)';
     }});
+}})();
 </script>
 """
     components.html(html, height=height + 30)
@@ -210,19 +229,19 @@ def render_zoomable_image(png_path, height=800):
 def render_heatmap_tab(before_path, after_path, before_label, after_label, results_dir):
     """Main render function called from dashboard.py"""
 
-    st.header("Risk Heatmap Analysis")
+    st.header("🌡️ Risk Heatmap Analysis")
     st.write("Highlights line-by-line risk of code changes based on control flow complexity.")
 
     # Show selected files
     col1, col2 = st.columns(2)
     with col1:
         if before_label:
-            st.info(f"Before: `{before_label}`")
+            st.info(f"📄 Before: `{before_label}`")
         else:
             st.warning("No before file selected.")
     with col2:
         if after_label:
-            st.info(f"After: `{after_label}`")
+            st.info(f"📄 After: `{after_label}`")
         else:
             st.warning("No after file selected.")
 
@@ -233,7 +252,7 @@ def render_heatmap_tab(before_path, after_path, before_label, after_label, resul
         st.session_state.heatmap_stats = None
 
     # Analyze button
-    if st.button("Generate Risk Heatmap", type="primary"):
+    if st.button("🚀 Generate Risk Heatmap", type="primary"):
         if not before_path or not after_path:
             st.error("Please provide both before and after files.")
         else:
@@ -250,9 +269,9 @@ def render_heatmap_tab(before_path, after_path, before_label, after_label, resul
                     )
                     st.session_state.heatmap_png   = output_path
                     st.session_state.heatmap_stats = stats
-                    st.success("Risk Heatmap generated successfully!")
+                    st.success("✅ Risk Heatmap generated successfully!")
                 except Exception as e:
-                    st.error(f"Error: {e}")
+                    st.error(f"❌ Error: {e}")
 
     # Display results
     if st.session_state.heatmap_png and os.path.exists(st.session_state.heatmap_png):
@@ -265,14 +284,14 @@ def render_heatmap_tab(before_path, after_path, before_label, after_label, resul
         # Download
         with open(png_path, 'rb') as f:
             st.download_button(
-                label="Download Heatmap",
+                label="⬇️ Download Heatmap",
                 data=f,
                 file_name="heatmap.png",
                 mime="image/png"
             )
 
     # Info box
-    with st.expander("About Risk Heatmap"):
+    with st.expander("ℹ️ About Risk Heatmap"):
         st.markdown("""
         **What is a Risk Heatmap?**
         A line-by-line visualization of source code changes, colored by risk level.

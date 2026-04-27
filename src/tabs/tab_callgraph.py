@@ -248,28 +248,44 @@ def render_function_subgraph(G, roles, target_func, output_path):
 # ============================================================
 
 def render_zoomable_image(png_path, height=640):
-    """Render PNG with mouse wheel zoom and drag-to-pan."""
+    """Render PNG with mouse wheel zoom, drag-to-pan, and gray scrollbar."""
     with open(png_path, "rb") as img_f:
         encoded = base64.b64encode(img_f.read()).decode()
 
     uid = os.path.basename(png_path).replace('.', '_')
     html = f"""
-<div style="overflow:hidden; width:100%; height:{height}px;
-            border:1px solid #ddd; border-radius:8px;
-            background:#fafafa; position:relative; cursor:grab;">
-    <div id="zc_{uid}" style="transform-origin:top left;
-                               position:absolute; top:0; left:0;">
-        <img src="data:image/png;base64,{encoded}"
-             style="display:block; width:100%;"/>
-    </div>
+<style>
+  #wrap_{uid} {{
+    overflow: auto;
+    width: 100%;
+    height: {height}px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+    position: relative;
+    cursor: grab;
+    scrollbar-width: thin;
+    scrollbar-color: #aaaaaa #f0f0f0;
+  }}
+  #wrap_{uid}::-webkit-scrollbar {{ width: 14px; height: 14px; }}
+  #wrap_{uid}::-webkit-scrollbar-track {{ background: #f0f0f0; border-radius: 4px; }}
+  #wrap_{uid}::-webkit-scrollbar-thumb {{ background: #aaaaaa; border-radius: 4px; }}
+  #wrap_{uid}::-webkit-scrollbar-thumb:hover {{ background: #888888; }}
+</style>
+<div id="wrap_{uid}">
+  <div id="zc_{uid}" style="transform-origin:top left;
+                             position:absolute; top:0; left:0; width:100%;">
+    <img src="data:image/png;base64,{encoded}"
+         style="display:block; width:100%;"/>
+  </div>
 </div>
 <p style="font-size:12px; color:gray; margin-top:4px;">
-    🖱️ Scroll to zoom &nbsp;|&nbsp; Click + drag to pan &nbsp;|&nbsp; Double-click to reset
+  🖱️ Scroll to zoom &nbsp;|&nbsp; Click + drag to pan &nbsp;|&nbsp; Double-click to reset
 </p>
 <script>
 (function() {{
     const c = document.getElementById('zc_{uid}');
-    const w = c.parentElement;
+    const w = document.getElementById('wrap_{uid}');
     let scale=1, px=0, py=0, drag=false, sx, sy;
     w.addEventListener('wheel', e => {{
         e.preventDefault();
