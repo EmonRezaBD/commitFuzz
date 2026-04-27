@@ -265,11 +265,16 @@ def render_zoomable_image(png_path, height=640):
 def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
     """Main render function called from dashboard.py"""
 
+<<<<<<< HEAD
     st.header("📌 Call Graph Analysis")
     st.write("Generates static call graphs using LLVM/Clang analysis.")
+=======
+    st.header("Call Graph Analysis")
+    st.write("Generates a static call graph using LLVM/Clang static analysis.")
+>>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
 
     if file_label:
-        st.info(f"📄 Selected file: `{file_label}`")
+        st.info(f"Selected file: `{file_label}`")
     else:
         st.warning("Please upload a C++ file or enable sample files.")
 
@@ -278,12 +283,17 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
         if key not in st.session_state:
             st.session_state[key] = None
 
+<<<<<<< HEAD
     # ── Feature 1: Full Call Graph ─────────────────────────────
     st.subheader("1️⃣ Full File Call Graph")
     st.caption("Shows all function call relationships in the entire file.")
 
     if st.button("🚀 Generate Full Call Graph", type="primary",
                  key="btn_full_cg"):
+=======
+    # Analyze button
+    if st.button("Generate Call Graph", type="primary"):
+>>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
         if cpp_path is None:
             st.error("No file selected.")
         else:
@@ -292,6 +302,7 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     cpp_path, project_root, results_dir
                 )
             if error:
+<<<<<<< HEAD
                 st.error(f"❌ {error}")
             elif png_path and os.path.exists(png_path):
                 st.session_state.callgraph_png = png_path
@@ -302,6 +313,12 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     clean_map = demangle_map(raw_map)
                     st.session_state.call_map = clean_map
                 st.success("✅ Full call graph generated!")
+=======
+                st.error(f"Error:\n\n{error}")
+            elif png_path and os.path.exists(png_path):
+                st.session_state.callgraph_png = png_path
+                st.success("Call graph generated successfully!")
+>>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
             else:
                 st.error("Call graph image not found.")
 
@@ -315,6 +332,7 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
 
     st.divider()
 
+<<<<<<< HEAD
     # ── Feature 2: Function-Specific Call Graph ────────────────
     st.subheader("2️⃣ Function-Specific Call Graph")
     st.caption("Focused view: who calls the function + what it calls.")
@@ -395,9 +413,26 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir):
                     file_name="func_callgraph.png", mime="image/png",
                     key="dl_func_cg"
                 )
+=======
+        # Download button
+        with open(png_path, 'rb') as f:
+            st.download_button(
+                label="Download Call Graph",
+                data=f,
+                file_name="callgraph.png",
+                mime="image/png"
+            )
+
+        # Raw data expander
+        txt_path = os.path.join(project_root, "graph.text")
+        if os.path.exists(txt_path):
+            with st.expander("View raw call graph data"):
+                with open(txt_path, 'r') as f:
+                    st.code(f.read(), language='text')
+>>>>>>> a0efbed7e27517c8a7de64bf108c4900545e8398
 
     # Info box
-    with st.expander("ℹ️ About Call Graph Analysis"):
+    with st.expander("About Call Graph Analysis"):
         st.markdown("""
         **Feature 1 — Full Call Graph:**
         All function relationships in the file. Generated via LLVM IR analysis.

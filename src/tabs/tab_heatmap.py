@@ -210,19 +210,19 @@ def render_zoomable_image(png_path, height=800):
 def render_heatmap_tab(before_path, after_path, before_label, after_label, results_dir):
     """Main render function called from dashboard.py"""
 
-    st.header("🌡️ Risk Heatmap Analysis")
+    st.header("Risk Heatmap Analysis")
     st.write("Highlights line-by-line risk of code changes based on control flow complexity.")
 
     # Show selected files
     col1, col2 = st.columns(2)
     with col1:
         if before_label:
-            st.info(f"📄 Before: `{before_label}`")
+            st.info(f"Before: `{before_label}`")
         else:
             st.warning("No before file selected.")
     with col2:
         if after_label:
-            st.info(f"📄 After: `{after_label}`")
+            st.info(f"After: `{after_label}`")
         else:
             st.warning("No after file selected.")
 
@@ -233,7 +233,7 @@ def render_heatmap_tab(before_path, after_path, before_label, after_label, resul
         st.session_state.heatmap_stats = None
 
     # Analyze button
-    if st.button("🚀 Generate Risk Heatmap", type="primary"):
+    if st.button("Generate Risk Heatmap", type="primary"):
         if not before_path or not after_path:
             st.error("Please provide both before and after files.")
         else:
@@ -250,9 +250,9 @@ def render_heatmap_tab(before_path, after_path, before_label, after_label, resul
                     )
                     st.session_state.heatmap_png   = output_path
                     st.session_state.heatmap_stats = stats
-                    st.success("✅ Risk Heatmap generated successfully!")
+                    st.success("Risk Heatmap generated successfully!")
                 except Exception as e:
-                    st.error(f"❌ Error: {e}")
+                    st.error(f"Error: {e}")
 
     # Display results
     if st.session_state.heatmap_png and os.path.exists(st.session_state.heatmap_png):
@@ -265,14 +265,14 @@ def render_heatmap_tab(before_path, after_path, before_label, after_label, resul
         # Download
         with open(png_path, 'rb') as f:
             st.download_button(
-                label="⬇️ Download Heatmap",
+                label="Download Heatmap",
                 data=f,
                 file_name="heatmap.png",
                 mime="image/png"
             )
 
     # Info box
-    with st.expander("ℹ️ About Risk Heatmap"):
+    with st.expander("About Risk Heatmap"):
         st.markdown("""
         **What is a Risk Heatmap?**
         A line-by-line visualization of source code changes, colored by risk level.
