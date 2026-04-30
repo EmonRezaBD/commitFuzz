@@ -29,3 +29,8 @@ CallGraph/build/*.so
 *.o
 __pycache__/
 venv/
+
+#images
+*.png
+
+
