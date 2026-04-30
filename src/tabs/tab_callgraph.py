@@ -35,6 +35,43 @@ def demangle_dot(dot_content):
     return re.sub(r'"?_Z\w+"?', replace_mangled, dot_content)
 
 
+def run_llvm_callgraph_multifile(folder_path, project_root, results_dir):
+    """Run LLVM CallGraph on a multi-file project folder.
+    Returns: (png_path, error)"""
+    multifile_script = os.path.join(project_root, "CallGraph", "run_multifile.sh")
+    try:
+        result = subprocess.run(
+            ["bash", multifile_script, folder_path],
+            capture_output=True, text=True, cwd=project_root
+        )
+        if result.returncode != 0:
+            return None, f"LLVM Multifile Error:\n{result.stderr}\n{result.stdout}"
+
+        dot_path = os.path.join(project_root, "graph.dot")
+        if not os.path.exists(dot_path):
+            return None, "graph.dot not generated"
+
+        clean_dot_path = os.path.join(results_dir, "graph_clean_multi.dot")
+        with open(dot_path, 'r') as f:
+            dot_content = f.read()
+        clean_content = demangle_dot(dot_content)
+        with open(clean_dot_path, 'w') as f:
+            f.write(clean_content)
+
+        png_path = os.path.join(results_dir, "callgraph_multi.png")
+        render_result = subprocess.run(
+            ["dot", "-Tpng", clean_dot_path, "-o", png_path],
+            capture_output=True, text=True
+        )
+        if render_result.returncode != 0:
+            return None, f"Graphviz Error:\n{render_result.stderr}"
+
+        return png_path, None
+
+    except Exception as e:
+        return None, f"Unexpected error: {e}"
+
+
 def run_llvm_callgraph(cpp_file_path, project_root, results_dir):
     """Run LLVM CallGraph tool. Returns (png_path, error)."""
     callgraph_script = os.path.join(project_root, "CallGraph", "run.sh")
@@ -450,6 +487,46 @@ def render_callgraph_tab(cpp_path, file_label, project_root, results_dir,
                 st.download_button("⬇️ Download Function Call Graph", data=f,
                                    file_name="func_callgraph.png", mime="image/png",
                                    key="dl_func_cg")
+
+    st.divider()
+
+    # ── Feature 3: Multi-File Project Call Graph ───────────────
+    st.subheader("3️⃣ Multi-File Project Call Graph")
+    st.caption("Captures cross-file function calls across an entire C/C++ project.")
+
+    folder_path = st.text_input(
+        "Project folder path (absolute path on this machine)",
+        placeholder="/home/user/my_cpp_project",
+        key="multi_folder_input"
+    )
+
+    if 'multi_callgraph_png' not in st.session_state:
+        st.session_state.multi_callgraph_png = None
+
+    if st.button("🚀 Generate Multi-File Call Graph", type="primary",
+                 key="btn_multi_cg"):
+        if not folder_path or not os.path.isdir(folder_path):
+            st.error("Please provide a valid folder path.")
+        else:
+            with st.spinner("Compiling all source files and linking..."):
+                png_path, error = run_llvm_callgraph_multifile(
+                    folder_path, project_root, results_dir
+                )
+            if error:
+                st.error(f"❌ {error}")
+            elif png_path and os.path.exists(png_path):
+                st.session_state.multi_callgraph_png = png_path
+                st.success("✅ Multi-file call graph generated!")
+            else:
+                st.error("Multi-file call graph image not found.")
+
+    if st.session_state.multi_callgraph_png and \
+       os.path.exists(st.session_state.multi_callgraph_png):
+        render_zoomable_image(st.session_state.multi_callgraph_png, height=650)
+        with open(st.session_state.multi_callgraph_png, 'rb') as f:
+            st.download_button("⬇️ Download Multi-File Call Graph", data=f,
+                               file_name="callgraph_multi.png", mime="image/png",
+                               key="dl_multi_cg")
 
     # Info box
     with st.expander("ℹ️ About Call Graph Analysis"):

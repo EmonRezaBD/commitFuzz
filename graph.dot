@@ -1,13 +1,15 @@
 digraph G {
-_Z10createNodei->malloc;
-_Z11insertFrontP10LinkedListi->_Z10createNodei;
-_Z9insertEndP10LinkedListi->_Z10createNodei;
-_Z10deleteNodeP10LinkedListi->free;
-_Z9printListP10LinkedList->printf;
-_Z8freeListP10LinkedList->free;
-main->_Z9insertEndP10LinkedListi;
-main->_Z11insertFrontP10LinkedListi;
-main->_Z9printListP10LinkedList;
-main->_Z10deleteNodeP10LinkedListi;
-main->_Z8freeListP10LinkedList;
+_Z15computeVariancePdi->_Z14computeAveragePdi;
+_Z13computeStdDevPdi->_Z15computeVariancePdi;
+_Z13computeStdDevPdi->sqrt;
+_Z10printStatsPdi->_Z14computeAveragePdi;
+_Z10printStatsPdi->_Z15computeMaxValuePdi;
+_Z10printStatsPdi->_Z15computeMinValuePdi;
+_Z10printStatsPdi->_Z13computeStdDevPdi;
+_Z10printStatsPdi->printf;
+_Z11runAnalysisPdi->printf;
+_Z11runAnalysisPdi->_Z10printStatsPdi;
+_Z11runAnalysisPdi->_Z10computeSumPdi;
+main->_Z11runAnalysisPdi;
+_Z14computeAveragePdi->_Z10computeSumPdi;
 }

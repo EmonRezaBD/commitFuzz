@@ -1,0 +1,15 @@
+digraph G {
+"computeVariance"->"computeAverage";
+"computeStdDev"->"computeVariance";
+"computeStdDev"->sqrt;
+"printStats"->"computeAverage";
+"printStats"->"computeMaxValue";
+"printStats"->"computeMinValue";
+"printStats"->"computeStdDev";
+"printStats"->printf;
+"runAnalysis"->printf;
+"runAnalysis"->"printStats";
+"runAnalysis"->"computeSum";
+main->"runAnalysis";
+"computeAverage"->"computeSum";
+}
