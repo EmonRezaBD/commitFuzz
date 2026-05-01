@@ -1,4 +1,4 @@
-# CommitFuzz
+# CommitLens
 
 A commit-level risk scoring and visualization framework for C/C++ projects. Predicts bug introduction risk from code changes using static analysis.
 
@@ -124,9 +124,3 @@ Or enter the path `data/demo_multifile` in the Call Graph tab → Section 3.
 - Nagappan & Ball (2005) — Code Churn & Defect Density
 - Moser et al. (2008) — Change Metrics for Defect Prediction
 - LLVM CallGraph pass: [bernardnongpoh/CallGraph](https://github.com/bernardnongpoh/CallGraph)
-
----
-
-## Authors
-
-Md Rokonuzzaman Reza, Tania Khatun, Richard Jiang — Louisiana State University
